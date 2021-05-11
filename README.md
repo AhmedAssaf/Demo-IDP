@@ -1,12 +1,10 @@
-#Demo 2.1
+#Demo 2.2
 
-Use Cmd: dotnet new mvc --auth Individual -f netcoreapp3.1 -n DemoIDP
+Use SQL Server as Database for Configuration and Operation Store
 
-#Add IdentityServer4 Middleware to Aspnet Pipeline
+Use AspNet Identity as Users and use SqlServer of it also
 
-#Check Discovery Endpoint
+Adding IdentityServer UI
 
-#Add Configuration
-
-#Testing Machine 2 Machine Client (Token and Introspect) With Postman
+Test
 
