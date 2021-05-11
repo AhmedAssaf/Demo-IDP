@@ -34,15 +34,15 @@ namespace DemoIDP
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(usersConnection,
-                sql=>sql.MigrationsAssembly(migrationsAssembly)));
+                sql => sql.MigrationsAssembly(migrationsAssembly)));
 
-            services.AddIdentity<IdentityUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+            services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-           
+
 
             services.AddIdentityServer()
                 .AddAspNetIdentity<IdentityUser>()
-                .AddConfigurationStore(option=>
+                .AddConfigurationStore(option =>
                 {
                     option.ConfigureDbContext = builder => builder.UseSqlServer(identityConnection,
                 sql => sql.MigrationsAssembly(migrationsAssembly));
@@ -57,7 +57,7 @@ namespace DemoIDP
 
 
             services.AddControllersWithViews();
-           services.AddRazorPages();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
