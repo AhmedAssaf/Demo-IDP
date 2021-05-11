@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -21,21 +22,45 @@ namespace DemoIDP
                 .WriteTo.Console()
                 .CreateLogger();
 
-            try
+            var seed = args.Contains("/seed");
+            if (seed)
             {
-                Log.Information("Starting web host");
-                CreateHostBuilder(args).Build().Run();
+                args = args.Except(new[] { "/seed" }).ToArray();
+            }
+
+            var host = CreateHostBuilder(args).Build();
+
+            if (seed)
+            {
+                Log.Information("Seeding database...");
+                var configuration = host.Services.GetRequiredService<IConfiguration>();
+                var usersConnection = configuration.GetConnectionString("DefaultConnection");
+                var identityConnection = configuration.GetConnectionString("IdentityConnection");
+                SeedData.EnsureSeedData(usersConnection,identityConnection);
+                Log.Information("Done seeding database.");
                 return 0;
             }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+
+
+            Log.Information("Starting host...");
+            host.Run();
+            return 0;
+
+            //try
+            //{
+            //    Log.Information("Starting web host");
+            //    CreateHostBuilder(args).Build().Run();
+            //    return 0;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal(ex, "Host terminated unexpectedly");
+            //    return 1;
+            //}
+            //finally
+            //{
+            //    Log.CloseAndFlush();
+            //}
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

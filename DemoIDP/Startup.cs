@@ -12,6 +12,7 @@ using DemoIDP.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 namespace DemoIDP
 {
@@ -27,22 +28,36 @@ namespace DemoIDP
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var usersConnection = Configuration.GetConnectionString("DefaultConnection");
+            var identityConnection = Configuration.GetConnectionString("IdentityConnection");
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                options.UseSqlServer(usersConnection,
+                sql=>sql.MigrationsAssembly(migrationsAssembly)));
+
+            services.AddIdentity<IdentityUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddControllersWithViews();
-           services.AddRazorPages();
+           
 
             services.AddIdentityServer()
-                .AddInMemoryClients(Config.Clients)
-                .AddInMemoryIdentityResources(Config.IdentityResources)
-                .AddInMemoryApiResources(Config.ApiResources)
-                .AddInMemoryApiScopes(Config.ApiScopes)
-                .AddTestUsers(Config.Users)
+                .AddAspNetIdentity<IdentityUser>()
+                .AddConfigurationStore(option=>
+                {
+                    option.ConfigureDbContext = builder => builder.UseSqlServer(identityConnection,
+                sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                .AddOperationalStore(option =>
+                {
+                    option.ConfigureDbContext = builder => builder.UseSqlServer(identityConnection,
+                sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
                 .AddDeveloperSigningCredential();
 
+
+
+            services.AddControllersWithViews();
+           services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,9 +85,7 @@ namespace DemoIDP
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
             });
         }
