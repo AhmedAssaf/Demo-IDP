@@ -102,17 +102,17 @@ namespace DemoIDP
                 UserClaims = new List<string> {"role"}
             },
 
-            //new IdentityResource(
-            //    name: "profile",
-            //    userClaims: new[] { "name", "email", "website" },
-            //    displayName: "Your profile data"){ Enabled=true,ShowInDiscoveryDocument=true},
-            new IdentityResources.Profile(),
+            new IdentityResource(
+                name: "profile",
+                userClaims: new[] { "name", "email", "website","given_name","family_name","address"},
+                displayName: "Your profile data"){ Enabled=true, ShowInDiscoveryDocument=true},
+            //new IdentityResources.Profile(),
         };
 
         public static IEnumerable<ApiScope> ApiScopes => new[]
         {
             new ApiScope("weatherapi.read"),
-            new ApiScope("weatherapi.write"),
+            new ApiScope("weatherapi.write","write",new[]{ "role"}),
         };
 
         public static IEnumerable<ApiResource> ApiResources => new[]
@@ -150,11 +150,11 @@ namespace DemoIDP
               ClientSecrets = {new Secret("secret".Sha256())},
 
               AllowedGrantTypes = GrantTypes.Code,
-              
+
               RedirectUris = {"https://localhost:5444/signin-oidc"},
               FrontChannelLogoutUri = "https://localhost:5444/signout-oidc",
               PostLogoutRedirectUris = {"https://localhost:5444/signout-callback-oidc"},
-              
+
               AllowOfflineAccess = true,
               AllowedScopes = {"openid", "profile", "weatherapi.read"},
               RequirePkce = true,
