@@ -87,68 +87,80 @@ namespace DemoIDP
         }
         #endregion
 
-        public static IEnumerable<IdentityResource> IdentityResources =>
-              new[]
-              {
-        new IdentityResources.OpenId(),
-        new IdentityResources.Profile(),
-        new IdentityResource
+        public static IEnumerable<IdentityResource> IdentityResources => new[]
         {
-          Name = "role",
-          UserClaims = new List<string> {"role"}
-        }
-              };
+            new IdentityResources.OpenId(),
 
-        public static IEnumerable<ApiScope> ApiScopes =>
-        new[]
+            //new IdentityResource(
+            //name: "openid",
+            //userClaims: new[] { "sub" },
+            //displayName: "Your user identifier"),
+
+            new IdentityResource
+            {
+                Name = "role",
+                UserClaims = new List<string> {"role"}
+            },
+
+            //new IdentityResource(
+            //    name: "profile",
+            //    userClaims: new[] { "name", "email", "website" },
+            //    displayName: "Your profile data"){ Enabled=true,ShowInDiscoveryDocument=true},
+            new IdentityResources.Profile(),
+        };
+
+        public static IEnumerable<ApiScope> ApiScopes => new[]
         {
-        new ApiScope("weatherapi.read"),
-        new ApiScope("weatherapi.write"),
+            new ApiScope("weatherapi.read"),
+            new ApiScope("weatherapi.write"),
         };
 
         public static IEnumerable<ApiResource> ApiResources => new[]
         {
-      new ApiResource("weatherapi")
-      {
-        Scopes = new List<string> {"weatherapi.read", "weatherapi.write"},
-        ApiSecrets = new List<Secret> {new Secret("ScopeSecret".Sha256())},
-        UserClaims = new List<string> {"role"}
-      }
-    };
-
-        public static IEnumerable<Client> Clients =>
-          new[]
+          new ApiResource("weatherapi")
           {
-        // m2m client credentials flow client
-        new Client
-        {
-          ClientId = "m2m.client",
-          ClientName = "Client Credentials Client",
+            Scopes = new List<string> {"weatherapi.read", "weatherapi.write"},
+            ApiSecrets = new List<Secret> {new Secret("ScopeSecret".Sha256())},
+            UserClaims = new List<string> {"role"}
+          }
+        };
 
-          AllowedGrantTypes = GrantTypes.ClientCredentials,
-          ClientSecrets = {new Secret("secret".Sha256())},
+        public static IEnumerable<Client> Clients => new[]
+          {
+            // m2m client credentials flow client
+            new Client
+            {
+              ClientId = "m2m.client",
+              ClientName = "Client Credentials Client",
 
-          AllowedScopes = {"weatherapi.read", "weatherapi.write"}
-        },
+              AllowedGrantTypes = GrantTypes.ClientCredentials,
+              ClientSecrets = {new Secret("secret".Sha256())},
+              //ClientSecrets = {new Secret(){
+              //    Type = IdentityServerConstants.SecretTypes.JsonWebKey,
+              //    Value = ""
+              //} },
 
-        // interactive client using code flow + pkce
-        new Client
-        {
-          ClientId = "interactive",
-          ClientSecrets = {new Secret("secret".Sha256())},
+              AllowedScopes = { "weatherapi.read", "weatherapi.write"}
+            },
 
-          AllowedGrantTypes = GrantTypes.Code,
+            // interactive client using code flow + pkce
+            new Client
+            {
+              ClientId = "interactive",
+              ClientSecrets = {new Secret("secret".Sha256())},
 
-          RedirectUris = {"https://localhost:5444/signin-oidc"},
-          FrontChannelLogoutUri = "https://localhost:5444/signout-oidc",
-          PostLogoutRedirectUris = {"https://localhost:5444/signout-callback-oidc"},
-
-          AllowOfflineAccess = true,
-          AllowedScopes = {"openid", "profile", "weatherapi.read"},
-          RequirePkce = true,
-          RequireConsent = true,
-          AllowPlainTextPkce = false
-        },
+              AllowedGrantTypes = GrantTypes.Code,
+              
+              RedirectUris = {"https://localhost:5444/signin-oidc"},
+              FrontChannelLogoutUri = "https://localhost:5444/signout-oidc",
+              PostLogoutRedirectUris = {"https://localhost:5444/signout-callback-oidc"},
+              
+              AllowOfflineAccess = true,
+              AllowedScopes = {"openid", "profile", "weatherapi.read"},
+              RequirePkce = true,
+              RequireConsent = true,
+              AllowPlainTextPkce = false
+            },
           };
     }
 }
